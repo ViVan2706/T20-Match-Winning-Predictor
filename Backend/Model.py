@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Load Data
-df = pd.read_csv("FinalProj/Backend/Final_T20.csv")
+df = pd.read_csv("./Final_T20.csv")
 X = df[['total_runs', 'total_wickets', 'required_runs',
         'balls_remaining', 'run_rate', 'required_run_rate', 'wickets_remaining']]
 y = df['result']
@@ -157,4 +157,4 @@ def predict_inning2(input_data: BallInputInning2):
     )
 
 if __name__ == "__main__":
-    uvicorn.run("ModelAndFastApi:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("Model:app", host="0.0.0.0", port=8000, reload=True)
