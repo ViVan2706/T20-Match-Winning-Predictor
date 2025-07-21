@@ -55,8 +55,8 @@ def heuristic_second_innings(total_runs, total_wickets, ball_bowled, target):
     batting_prob = min(95, max(5, rate_comparison * 70 + wickets_factor * 25))
     return batting_prob, 100 - batting_prob
 
-def calculate_prediction(total_runs, total_wickets, ball_bowled, target_score):
-    if ball_bowled == 0:
+def calculate_prediction(total_runs, total_wickets, ball_bowled, target_score,inning):
+    if (ball_bowled == 0 and inning==1):
         return {
             'Team Batting Win %': f"{df['result'].value_counts()[1] / df['result'].value_counts().sum() * 100:.2f}%",
             'Team Bowling Win %': f"{df['result'].value_counts()[2] / df['result'].value_counts().sum() * 100:.2f}%"
@@ -135,7 +135,8 @@ def predict_inning1(input_data: BallInputInning1):
         input_data.total_runs,
         input_data.total_wickets,
         input_data.ball_bowled,
-        first_inning_target 
+        first_inning_target,
+        inning=1
     )
 
 @app.post("/predictinning2")
@@ -144,7 +145,8 @@ def predict_inning2(input_data: BallInputInning2):
         input_data.total_runs,
         input_data.total_wickets,
         input_data.ball_bowled,
-        input_data.target_score
+        input_data.target_score,
+        inning=2
     )
 
 if __name__ == "__main__":
