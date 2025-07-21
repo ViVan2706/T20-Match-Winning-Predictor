@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import joblib
+import os
 app = FastAPI()
 
 app.add_middleware(
@@ -147,4 +148,5 @@ def predict_inning2(input_data: BallInputInning2):
     )
 
 if __name__ == "__main__":
-    uvicorn.run("Model:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get('PORT', 8000))
+    uvicorn.run("Model:app", host="0.0.0.0", port=port, reload=True)
