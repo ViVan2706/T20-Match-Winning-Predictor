@@ -1,11 +1,9 @@
 import pandas as pd
-from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+import joblib
 app = FastAPI()
 
 app.add_middleware(
@@ -22,16 +20,8 @@ X = df[['total_runs', 'total_wickets', 'required_runs',
         'balls_remaining', 'run_rate', 'required_run_rate', 'wickets_remaining']]
 y = df['result']
 
-# Scale Data
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Train Logistic Regression with Hyperparameter Tuning
-log_reg = LogisticRegression(max_iter=1000, class_weight='balanced')
-param_grid = {'C': [0.01, 0.1, 1, 10]}
-grid = GridSearchCV(log_reg, param_grid, cv=5)
-grid.fit(X_scaled, y)
-best_model = grid.best_estimator_
+best_model = joblib.load('./model.pkl')
+scaler = joblib.load('./scaler.pkl')
 base_inning1_win_prob = df["result"].value_counts()[1] / df["result"].value_counts().sum()
 base_inning2_win_prob = df["result"].value_counts()[2] / df["result"].value_counts().sum()
 
