@@ -58,52 +58,66 @@ const MatchInterface = ({ team1, team2, battingFirst, onMatchEnd, onLeaveMatch }
 
   // const probability = calculateWinProbability();
 
-  const handleScoring = (runs: number, isWicket: boolean = false) => {
-    setMatch(prev => {
-      const newMatch = {
-        ...prev,
-        runs: prev.runs + runs,
-        wickets: isWicket ? prev.wickets + 1 : prev.wickets,
-        balls: prev.balls + 1
+ const handleScoring = (runs: number, isWicket: boolean = false) => {
+  setMatch(prev => {
+    const updated = {
+      ...prev,
+      runs: prev.runs + runs,
+      wickets: isWicket ? prev.wickets + 1 : prev.wickets,
+      balls: prev.balls + 1,
+    };
+
+    // End of first innings
+    if (updated.innings === 1 && (updated.balls >= 120 || updated.wickets >= 10)) {
+      return {
+        battingTeam: prev.bowlingTeam,
+        bowlingTeam: prev.battingTeam,
+        runs: 0,
+        wickets: 0,
+        balls: 0,
+        target: updated.runs + 1,
+        innings: 2,
       };
+    }
 
-      // Check for innings end
-      if (newMatch.balls >= 120 || newMatch.wickets >= 10) {
-        if (newMatch.innings === 1) {
-          // End of first innings
-          return {
-            battingTeam: prev.bowlingTeam,
-            bowlingTeam: prev.battingTeam,
-            runs: 0,
-            wickets: 0,
-            balls: 0,
-            target: prev.runs + 1,
-            innings: 2
-          };
+    // End of second innings (match end)
+    if (updated.innings === 2) {
+      const isAllOut = updated.wickets === 10;
+      const isBallsOver = updated.balls === 120;
+      const hasChased = updated.runs >= (updated.target || 0);
+
+      if (hasChased) {
+        onMatchEnd(updated.battingTeam); // chased successfully
+        return updated;
+      }
+
+      if (isAllOut || isBallsOver) {
+        let winner: string;
+
+        if (updated.runs === updated.target-1) {
+          winner = "draw";
         } else {
-          // End of match
-          const winner = newMatch.runs >= (newMatch.target || 0) ? newMatch.battingTeam : newMatch.bowlingTeam;
-          onMatchEnd(winner);
-          return newMatch;
+          winner = updated.runs >= (updated.target || 0)
+            ? updated.battingTeam
+            : updated.bowlingTeam;
         }
-      }
 
-      // Check for chase completion
-      if (newMatch.innings === 2 && newMatch.runs >= (newMatch.target || 0)) {
-        onMatchEnd(newMatch.battingTeam);
-        return newMatch;
+        onMatchEnd(winner);
+        return updated;
       }
+    }
 
-      return newMatch;
-    });
-  };
+    return updated;
+  });
+};
+
 
   const formatOvers = (balls: number) => {
     const overs = Math.floor(balls / 6);
     const remainingBalls = balls % 6;
     return `${overs}.${remainingBalls}`;
   };
-
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header with Leave Match button */}
@@ -165,24 +179,34 @@ const MatchInterface = ({ team1, team2, battingFirst, onMatchEnd, onLeaveMatch }
             <span>{match.bowlingTeam}</span>
           </div>
         </div> */}
-        {/* Win Probability Bar*/}
+        {/* Win Probability Bar */}
         <div className="bg-card rounded-lg p-4">
-          <div className="flex justify-between mb-2 text-sm">
-            <span>{prediction.batting}</span>
-            <span className="text-muted-foreground">Win Probability</span>
-            <span>{prediction.bowling}</span>
-          </div>
-          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all duration-500"
-             style={{ width: `${parseFloat(prediction.batting)}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-            <span>{match.battingTeam}</span>
-            <span>{match.bowlingTeam}</span>
-          </div>
+          {parseFloat(prediction.batting) === 0 && parseFloat(prediction.bowling) === 0 ? (
+             <div className="text-center text-sm text-muted-foreground">
+              <div>Probability meter is loading...</div>
+              <div className="text-xs mt-1">It may take up to 50 seconds to load the first time.</div>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-between mb-2 text-sm">
+                <span>{prediction.batting}</span>
+                <span className="text-muted-foreground">Win Probability</span>
+                <span>{prediction.bowling}</span>
+              </div>
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-500"
+                  style={{ width: `${parseFloat(prediction.batting)}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                <span>{match.battingTeam}</span>
+                <span>{match.bowlingTeam}</span>
+              </div>
+            </>
+          )}
         </div>
+
 
 
         {/* Scoring Buttons */}

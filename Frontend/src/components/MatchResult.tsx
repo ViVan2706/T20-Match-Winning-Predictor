@@ -1,14 +1,15 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MatchResultProps {
-  winner: string;
+  winner: string; 
   onNewMatch: () => void;
   onGoHome: () => void;
 }
 
 const MatchResult = ({ winner, onNewMatch, onGoHome }: MatchResultProps) => {
+  const isDraw = !winner || winner.toLowerCase() === "draw";
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md text-center">
@@ -17,10 +18,19 @@ const MatchResult = ({ winner, onNewMatch, onGoHome }: MatchResultProps) => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="py-6">
-            <div className="text-3xl font-bold text-green-600 mb-2">{winner}</div>
-            <div className="text-lg text-muted-foreground">Wins the Match!</div>
+            {isDraw ? (
+              <>
+                <div className="text-3xl font-bold text-yellow-600 mb-2">Match Drawn</div>
+                <div className="text-lg text-muted-foreground">It was a close one!</div>
+              </>
+            ) : (
+              <>
+                <div className="text-3xl font-bold text-green-600 mb-2">{winner}</div>
+                <div className="text-lg text-muted-foreground">Wins the Match!</div>
+              </>
+            )}
           </div>
-          
+
           <div className="space-y-3">
             <Button onClick={onNewMatch} className="w-full">
               Start New Match
